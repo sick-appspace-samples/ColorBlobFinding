@@ -22,11 +22,10 @@
 --Start of Global Scope---------------------------------------------------------
 
 -- Delay in ms between visualization steps for demonstration purpose
-local DELAY = 500
+local DELAY = 1000
 
 -- Creating viewer
 local viewer = View.create()
-viewer:setID('viewer2D')
 
 -- Setting up graphical overlay attributes
 local decoration = View.ShapeDecoration.create()
@@ -36,6 +35,7 @@ decoration:setLineWidth(4)
 local textDecoration = View.TextDecoration.create()
 textDecoration:setSize(50)
 textDecoration:setPosition(20, 50)
+textDecoration:setColor(0, 220, 0)
 
 --End of Global Scope-----------------------------------------------------------
 
@@ -44,17 +44,16 @@ textDecoration:setPosition(20, 50)
 -- Viewing image with text label and delay
 --@show(img:Image, name:string)
 local function show(img, name)
-  viewer:addImage(img)
-  viewer:addText(name, textDecoration)
+  viewer:clear()
+  local imgID = viewer:addImage(img)
+  viewer:addText(name, textDecoration, nil, imgID)
   viewer:present()
-  Script.sleep(DELAY * 2)
+  Script.sleep(DELAY)
 end
 
 local function main()
   local img = Image.load('resources/ColorBlobFinding.bmp')
-  viewer:add(img)
-  viewer:present()
-  Script.sleep(DELAY * 2) -- for demonstration purpose only
+  show(img, 'Input image')
 
   -- Converting to HSV color space (Hue, Saturation, Value)
   local H,  S, V = Image.toHSV(img)
@@ -70,7 +69,7 @@ local function main()
   local nonColoredForeground = S:threshold(0, 40, foreground)
   show(nonColoredForeground:toImage(S), 'Non-colored foreground')
 
-  local coloredForeground = Image.PixelRegion.getDifference(foreground, nonColoredForeground)
+  local coloredForeground = foreground:getDifference(nonColoredForeground)
   show(coloredForeground:toImage(S), 'Colored foreground')
 
   -- Threshold on colored foreground on hue to find blue only (excluding white/gray)
@@ -80,10 +79,12 @@ local function main()
   -- Labelling blue objects (blobs)
   local blueObjects = blueRegion:findConnected(500)
   -- Drawing bounding box around each object
+  viewer:clear()
   local imgID = viewer:addImage(img)
   for i = 1, #blueObjects do
     local boundingBox = blueObjects[i]:getBoundingBoxOriented(H)
     viewer:addShape(boundingBox, decoration, nil, imgID)
+
     Script.sleep(DELAY) -- for demonstration purpose only
     viewer:present() -- presenting single steps
   end
