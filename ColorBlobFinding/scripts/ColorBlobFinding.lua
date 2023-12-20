@@ -5,7 +5,7 @@
 local DELAY = 1000
 
 -- Creating viewer
-local viewer = View.create("viewer2D1")
+local viewer = View.create()
 
 -- Setting up graphical overlay attributes
 local decoration = View.ShapeDecoration.create()
@@ -21,12 +21,13 @@ textDecoration:setColor(0, 220, 0)
 
 --Start of Function and Event Scope---------------------------------------------
 
--- Viewing image with text label and delay
---@show(img:Image, name:string)
+---Viewing image with text label and delay
+---@param img Image
+---@param name string
 local function show(img, name)
   viewer:clear()
-  local imgID = viewer:addImage(img)
-  viewer:addText(name, textDecoration, nil, imgID)
+  viewer:addImage(img)
+  viewer:addText(name, textDecoration)
   viewer:present()
   Script.sleep(DELAY)
 end
@@ -60,14 +61,11 @@ local function main()
   local blueObjects = blueRegion:findConnected(500)
   -- Drawing bounding box around each object
   viewer:clear()
-  local imgID = viewer:addImage(img)
-  for i = 1, #blueObjects do
-    local boundingBox = blueObjects[i]:getBoundingBoxOriented(H)
-    viewer:addShape(boundingBox, decoration, nil, imgID)
+  viewer:addImage(img)
+  local boundingBoxes = blueObjects:getBoundingBoxOriented(H)
+  viewer:addShape(boundingBoxes, decoration)
+  viewer:present() -- presenting single steps
 
-    Script.sleep(DELAY) -- for demonstration purpose only
-    viewer:present() -- presenting single steps
-  end
   print(#blueObjects .. ' blue objects found')
   print('App finished.')
 end
